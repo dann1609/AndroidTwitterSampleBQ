@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.media.MediaBrowserServiceCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -15,6 +16,7 @@ import com.twitter.sdk.android.core.Callback;
 import com.twitter.sdk.android.core.Result;
 import com.twitter.sdk.android.core.TwitterException;
 import com.twitter.sdk.android.core.models.Tweet;
+import com.twitter.sdk.android.tweetui.TimelineResult;
 import com.twitter.sdk.android.tweetui.TweetTimelineListAdapter;
 import com.twitter.sdk.android.tweetui.TweetUtils;
 import com.twitter.sdk.android.tweetui.TweetView;
@@ -30,18 +32,36 @@ public class Main2Activity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        final SwipeRefreshLayout swipeLayout = (SwipeRefreshLayout) findViewById(R.id.content_main2);
         final UserTimeline userTimeline = new UserTimeline.Builder()
-                .screenName("@realDonaldTrump")
+                .screenName("realDonaldTrump")
                 .build();
         final TweetTimelineListAdapter adapter = new TweetTimelineListAdapter.Builder(this)
                 .setTimeline(userTimeline)
                 .build();
 
-        ListView myTweetListView = (ListView) findViewById(R.id.content_main2);
+        ListView myTweetListView = (ListView) findViewById(R.id.tweet_list);
 
         myTweetListView.setAdapter(adapter);
         Log.d("TwitterKit", adapter.toString());
 
+        swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                swipeLayout.setRefreshing(true);
+                adapter.refresh(new Callback<TimelineResult<Tweet>>() {
+                    @Override
+                    public void success(Result<TimelineResult<Tweet>> result) {
+                        swipeLayout.setRefreshing(false);
+                    }
+
+                    @Override
+                    public void failure(TwitterException exception) {
+                        // Toast or some other action
+                    }
+                });
+            }
+        });
 
 /*
         // TODO: Use a more specific parent
