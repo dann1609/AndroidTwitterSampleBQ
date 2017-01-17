@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -18,6 +19,8 @@ import com.twitter.sdk.android.core.TwitterException;
 import com.twitter.sdk.android.core.models.Tweet;
 import com.twitter.sdk.android.tweetui.TimelineResult;
 import com.twitter.sdk.android.tweetui.UserTimeline;
+
+import java.util.ArrayList;
 
 public class Main2Activity extends AppCompatActivity {
 
@@ -36,7 +39,7 @@ public class Main2Activity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         //Creating a shared preference
-        mPrefs = getPreferences(MODE_PRIVATE);
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         final SwipeRefreshLayout swipeLayout = (SwipeRefreshLayout) findViewById(R.id.content_main2);
         ListView myTweetListView = (ListView) findViewById(R.id.tweet_list);
@@ -46,14 +49,9 @@ public class Main2Activity extends AppCompatActivity {
                     .screenName("realDonaldTrump")
                     .build();
 
-           /* mPrefs = getPreferences(MODE_PRIVATE);
-            gson = new Gson();
-            json = mPrefs.getString("MyObject", "");
-            userTimeline = gson.fromJson(json, UserTimeline.class);
-            Log.d("TwitterKitload", String.valueOf(userTimeline));*/
-
 
         adapter = new MyTweetTimelineListAdapter(this,userTimeline);
+        adapter.load(mPrefs);
 
 
         myTweetListView.setAdapter(adapter);
@@ -95,18 +93,14 @@ public class Main2Activity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        mPrefs = getPreferences(MODE_PRIVATE);
-        SharedPreferences.Editor prefsEditor = mPrefs.edit();
-        gson = new Gson();
-        json = gson.toJson(userTimeline);
-        prefsEditor.putString("MyObject", json);
-        prefsEditor.commit();
+
         Log.d("TwitterKite", String.valueOf(adapter.getCount()));
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-
+        Log.d("TwitterKite", String.valueOf(adapter.getCount()));
+        adapter.save(mPrefs);
     }
 }
