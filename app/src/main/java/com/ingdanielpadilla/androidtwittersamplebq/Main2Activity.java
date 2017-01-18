@@ -12,7 +12,6 @@ import android.util.Log;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
 import com.twitter.sdk.android.core.Callback;
 import com.twitter.sdk.android.core.Result;
 import com.twitter.sdk.android.core.TwitterException;
@@ -20,15 +19,13 @@ import com.twitter.sdk.android.core.models.Tweet;
 import com.twitter.sdk.android.tweetui.TimelineResult;
 import com.twitter.sdk.android.tweetui.UserTimeline;
 
-import java.util.ArrayList;
 
 public class Main2Activity extends AppCompatActivity {
 
-    Gson gson;
-    String json;
     UserTimeline userTimeline;
     MyTweetTimelineListAdapter adapter;
     SharedPreferences  mPrefs;
+    ListView myTweetListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +39,7 @@ public class Main2Activity extends AppCompatActivity {
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         final SwipeRefreshLayout swipeLayout = (SwipeRefreshLayout) findViewById(R.id.content_main2);
-        ListView myTweetListView = (ListView) findViewById(R.id.tweet_list);
+        myTweetListView = (ListView) findViewById(R.id.tweet_list);
 
 
             userTimeline = new UserTimeline.Builder()
@@ -55,10 +52,6 @@ public class Main2Activity extends AppCompatActivity {
 
 
         myTweetListView.setAdapter(adapter);
-        Log.d("TwitterKit", adapter.toString());
-
-
-
 
 
         swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -74,7 +67,7 @@ public class Main2Activity extends AppCompatActivity {
                     @Override
                     public void failure(TwitterException exception) {
                         swipeLayout.setRefreshing(false);
-                        Toast.makeText(Main2Activity.this, "No se pudo conectar con el servidor de Twitter", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(Main2Activity.this, exception.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
                 Log.d("TwitterKit", String.valueOf(adapter.getCount()));
@@ -90,12 +83,6 @@ public class Main2Activity extends AppCompatActivity {
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        Log.d("TwitterKite", String.valueOf(adapter.getCount()));
-    }
 
     @Override
     protected void onStop() {
