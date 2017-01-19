@@ -1,8 +1,5 @@
 package com.ingdanielpadilla.androidtwittersamplebq;
 
-/**
- * Created by daniel.padilla on 17/1/2017.
- */
 
 /*
  * Copyright (C) 2015 Twitter, Inc.
@@ -19,6 +16,12 @@ package com.ingdanielpadilla.androidtwittersamplebq;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
+ */
+
+/**
+ * Created by daniel.padilla on 17/1/2017.
+ * Base code taken from from com.twitter.sdk.android.tweetui.TweetStateHolder;
+ * Some function was edited another was created according requirements
  */
 
 import com.twitter.sdk.android.tweetui.TimelineCursor;

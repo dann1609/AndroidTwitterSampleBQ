@@ -1,8 +1,7 @@
 package com.ingdanielpadilla.androidtwittersamplebq;
 
+
 /**
- * Created by daniel.padilla on 17/1/2017.
-*
         * Copyright (C) 2015 Twitter, Inc.
         *
         * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,6 +18,12 @@ package com.ingdanielpadilla.androidtwittersamplebq;
         *
         */
 
+/**
+ * Created by daniel.padilla on 17/1/2017.
+ * Base code taken from from com.twitter.sdk.android.tweetui.TimelineListAdapter;
+ * Only CAPACITY was edited.
+ */
+
 import android.database.DataSetObservable;
 import android.database.DataSetObserver;
 
@@ -26,7 +31,6 @@ import com.twitter.sdk.android.core.Callback;
 import com.twitter.sdk.android.core.Result;
 import com.twitter.sdk.android.core.TwitterException;
 import com.twitter.sdk.android.core.models.Identifiable;
-import com.twitter.sdk.android.core.models.Tweet;
 import com.twitter.sdk.android.tweetui.Timeline;
 import com.twitter.sdk.android.tweetui.TimelineResult;
 

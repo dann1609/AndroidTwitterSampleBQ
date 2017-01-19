@@ -1,8 +1,5 @@
 package com.ingdanielpadilla.androidtwittersamplebq;
 
-/**
- * Created by daniel.padilla on 17/1/2017.
- */
 
 /*
  * Copyright (C) 2015 Twitter, Inc.
@@ -21,6 +18,12 @@ package com.ingdanielpadilla.androidtwittersamplebq;
  *
  */
 
+/**
+ * Created by daniel.padilla on 17/1/2017.
+ * Base code taken from from com.twitter.sdk.android.tweetui.TimelineListAdapter;
+ * Some function was edited another was created according requirements
+ */
+
 import android.content.Context;
 import android.database.DataSetObserver;
 import android.widget.BaseAdapter;
@@ -30,9 +33,7 @@ import com.twitter.sdk.android.core.Callback;
 import com.twitter.sdk.android.core.Result;
 import com.twitter.sdk.android.core.TwitterApiException;
 import com.twitter.sdk.android.core.TwitterException;
-import com.twitter.sdk.android.core.internal.TwitterApi;
 import com.twitter.sdk.android.core.models.Identifiable;
-import com.twitter.sdk.android.core.models.Tweet;
 import com.twitter.sdk.android.tweetui.Timeline;
 import com.twitter.sdk.android.tweetui.TimelineResult;
 
@@ -115,6 +116,8 @@ public abstract class MyTimelineListAdapter<T extends Identifiable> extends Base
     Callback<TimelineResult<T>> myCb=new Callback<TimelineResult<T>>() {
         @Override
         public void success(Result<TimelineResult<T>> result) {
+
+            //Saving tweet data before a good first load.
             save();
         }
 
@@ -124,21 +127,47 @@ public abstract class MyTimelineListAdapter<T extends Identifiable> extends Base
         }
     };
 
+    //Toast notifying failures.
     public void notifyFailure(TwitterException exception){
         int er=0;
         try {
             er=((TwitterApiException) exception).getStatusCode();
         }catch (Exception e){};
         String msg="";
-        if(er==404){
-            msg="This user do not exist! \nLoading last user searched";
-        }
-        else{
-            msg=exception.getMessage();
+        switch (er){
+            case 401:
+                msg="Missing or incorrect authentication credentials. \nMaybe is a private user.";
+                break;
+            case 404:
+                msg="This user do not exist! \nLoading last user searched";
+                break;
+            case 420:
+                msg="Enhance Your Calm \nYou are being rate limited";
+                break;
+            case 429:
+                msg="Too Many Requests";
+                break;
+            case 500:
+                msg="Internal Server Error \nSomething is broken.";
+                break;
+            case 502:
+                msg="Bad Gateway \nTwitter is down or being upgraded.";
+                break;
+            case 503:
+                msg="Service Unavailable \nTwitter servers are overloaded with requests. Try again later.";
+                break;
+            case 504:
+                msg="Gateway timeout \nRequest couldn’t be serviced due to some failure within our stack. Try again later.";
+                break;
+            default:
+                msg=exception.getMessage();
+                break;
+
         }
         Toast.makeText(context,msg , Toast.LENGTH_SHORT).show();
     }
 
+    //For override proposes.
     public void save(){}
 }
 
