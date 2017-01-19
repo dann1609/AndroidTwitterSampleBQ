@@ -27,8 +27,8 @@
             android:value="b75933de843571f6a3bf22c7115bf9072d3f8190" />
 
         <activity
-            android:name=".Main2Activity"
-            android:label="@string/title_activity_main2"
+            android:name=".ScrollingActivity"
+            android:label="@string/title_activity_scrolling"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

@@ -2,34 +2,24 @@ package com.ingdanielpadilla.androidtwittersamplebq;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.twitter.sdk.android.core.Callback;
 import com.twitter.sdk.android.core.Result;
 import com.twitter.sdk.android.core.TwitterException;
-import com.twitter.sdk.android.core.internal.scribe.ScribeItem;
 import com.twitter.sdk.android.core.models.Tweet;
 import com.twitter.sdk.android.tweetui.BaseTweetView;
 import com.twitter.sdk.android.tweetui.CompactTweetView;
 import com.twitter.sdk.android.tweetui.Timeline;
-import com.twitter.sdk.android.tweetui.TimelineFilter;
 import com.twitter.sdk.android.tweetui.TimelineResult;
-import com.twitter.sdk.android.tweetui.TweetTimelineListAdapter;
 import com.twitter.sdk.android.tweetui.TweetUi;
-import com.twitter.sdk.android.tweetui.UserTimeline;
-import com.twitter.sdk.android.tweetui.internal.SwipeToDismissTouchListener;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.List;
-
-import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Created by daniel.padilla on 16/1/2017.
@@ -63,8 +53,13 @@ public class MyTweetTimelineListAdapter  extends MyTimelineListAdapter<Tweet> {
     }
 
     MyTweetTimelineListAdapter(Context context, MyTimelineDelegate<Tweet> delegate, int styleResId,
-                             Callback<Tweet> cb, TweetUi tweetUi) {
-        super(context, delegate);
+                               Callback<Tweet> cb, TweetUi tweetUi){
+        this(context,delegate,styleResId,cb,tweetUi,null);
+    }
+
+    MyTweetTimelineListAdapter(Context context, MyTimelineDelegate<Tweet> delegate, int styleResId,
+                             Callback<Tweet> cb, TweetUi tweetUi,Callback<TimelineResult<Tweet>>rCb) {
+        super(context, delegate,rCb);
         this.styleResId = styleResId;
         this.actionCallback = new MyTweetTimelineListAdapter.ReplaceTweetCallback(delegate, cb);
         this.tweetUi = tweetUi;
@@ -97,38 +92,7 @@ public class MyTweetTimelineListAdapter  extends MyTimelineListAdapter<Tweet> {
         return rowView;
     }
 
-    /*private void scribeTimelineImpression() {
-        final String jsonMessage;
-        if (delegate instanceof FilterTimelineDelegate) {
-            final FilterTimelineDelegate filterTimelineDelegate = (
-                    FilterTimelineDelegate) delegate;
-            final TimelineFilter timelineFilter = filterTimelineDelegate.timelineFilter;
-            jsonMessage = getJsonMessage(timelineFilter.totalFilters());
-        } else {
-            jsonMessage = DEFAULT_FILTERS_JSON_MSG;
-        }
 
-        final ScribeItem scribeItem = ScribeItem.fromMessage(jsonMessage);
-        final List<ScribeItem> items = new ArrayList<>();
-        items.add(scribeItem);
-
-        final String timelineType = getTimelineType(delegate.getTimeline());
-        tweetUi.scribe(ScribeConstants.getSyndicatedSdkTimelineNamespace(timelineType));
-        tweetUi.scribe(ScribeConstants.getTfwClientTimelineNamespace(timelineType), items);
-    }*/
-
-    private String getJsonMessage(int totalFilters) {
-        final JsonObject message = new JsonObject();
-        message.addProperty(TOTAL_FILTERS_JSON_PROP, totalFilters);
-        return gson.toJson(message);
-    }
-
-    /*static String getTimelineType(Timeline timeline) {
-        if (timeline instanceof BaseTimeline) {
-            return ((BaseTimeline) timeline).getTimelineType();
-        }
-        return "other";
-    }*/
 
     /*
      * On success, sets the updated Tweet in the TimelineDelegate to replace any old copies
@@ -173,8 +137,24 @@ public class MyTweetTimelineListAdapter  extends MyTimelineListAdapter<Tweet> {
 
     @Override
     public Tweet getItem(int position) {
-       if(position<super.getCount()){return super.getItem(position);}
-        else{return mStoredTweets.get(position);}
+       if(position<super.getCount()){
+           return super.getItem(position);
+       }else{
+           if(isLastPosition(position)) {
+               delegate.previous();
+           }
+           return mStoredTweets.get(position);
+       }
+    }
+
+    public boolean isLastPosition(int position){
+        return position==getCount()-1;
+    }
+
+    @Override
+    public long getItemId(int position) {
+        if(position<super.getCount()){return super.getItemId(position);}
+            else{return mStoredTweets.get(position).getId();}
     }
 
     @Override
@@ -182,15 +162,14 @@ public class MyTweetTimelineListAdapter  extends MyTimelineListAdapter<Tweet> {
         super.refresh(cb);
     }
 
-    Callback<TimelineResult<Tweet>> myCb=new Callback<TimelineResult<Tweet>>() {
-        @Override
-        public void success(Result<TimelineResult<Tweet>> result) {
-        }
+    @Override
+    public void save() {
+        save(PreferenceManager.getDefaultSharedPreferences(context));
+    }
 
-        @Override
-        public void failure(TwitterException exception) {
-        }
-    };
+    public void load(){
+        load(PreferenceManager.getDefaultSharedPreferences(context));
+    }
 
     public void save(SharedPreferences mPrefs){
 
@@ -220,6 +199,7 @@ public class MyTweetTimelineListAdapter  extends MyTimelineListAdapter<Tweet> {
             this.mStoredTweets = gson.fromJson(json, type);
         }
     }
+
 
 
 }

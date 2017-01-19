@@ -24,9 +24,15 @@ package com.ingdanielpadilla.androidtwittersamplebq;
 import android.content.Context;
 import android.database.DataSetObserver;
 import android.widget.BaseAdapter;
+import android.widget.Toast;
 
 import com.twitter.sdk.android.core.Callback;
+import com.twitter.sdk.android.core.Result;
+import com.twitter.sdk.android.core.TwitterApiException;
+import com.twitter.sdk.android.core.TwitterException;
+import com.twitter.sdk.android.core.internal.TwitterApi;
 import com.twitter.sdk.android.core.models.Identifiable;
+import com.twitter.sdk.android.core.models.Tweet;
 import com.twitter.sdk.android.tweetui.Timeline;
 import com.twitter.sdk.android.tweetui.TimelineResult;
 
@@ -50,13 +56,19 @@ public abstract class MyTimelineListAdapter<T extends Identifiable> extends Base
     }
 
     MyTimelineListAdapter(Context context, MyTimelineDelegate<T> delegate) {
+        this(context, delegate,null);
+    }
+
+    MyTimelineListAdapter(Context context, MyTimelineDelegate<T> delegate,Callback<TimelineResult<T>> cb) {
         if (context == null) {
             throw new IllegalArgumentException("Context must not be null");
         }
         this.context = context;
         this.delegate = delegate;
-        delegate.refresh(null);
+        delegate.refresh(myCb);
     }
+
+
 
     /**
      * Clears the items and loads the latest Timeline items.
@@ -99,5 +111,34 @@ public abstract class MyTimelineListAdapter<T extends Identifiable> extends Base
     public void notifyDataSetInvalidated() {
         delegate.notifyDataSetInvalidated();
     }
+
+    Callback<TimelineResult<T>> myCb=new Callback<TimelineResult<T>>() {
+        @Override
+        public void success(Result<TimelineResult<T>> result) {
+            save();
+        }
+
+        @Override
+        public void failure(TwitterException exception) {
+            notifyFailure(exception);
+        }
+    };
+
+    public void notifyFailure(TwitterException exception){
+        int er=0;
+        try {
+            er=((TwitterApiException) exception).getStatusCode();
+        }catch (Exception e){};
+        String msg="";
+        if(er==404){
+            msg="This user do not exist! \nLoading last user searched";
+        }
+        else{
+            msg=exception.getMessage();
+        }
+        Toast.makeText(context,msg , Toast.LENGTH_SHORT).show();
+    }
+
+    public void save(){}
 }
 
